@@ -1,3 +1,85 @@
+/*SEARCH FIELD*/
+#search-input{
+    padding:10px;
+    border-radius: 5px; 
+}
+#search-submit:after{
+    padding: 5px;
+    content: "\2193";
+}
+
+
+/*employees Card*/
+.card{
+    box-shadow: 2px 2px 10px #898b8e;
+}
+.card-img{
+    border:  3px solid #8f9091;
+}
+.card:hover {
+    border:  2px solid #8f9091;
+}
+
+/*employees Modal Window*/
+.modal-img{
+    border:  3px solid #8f9091;
+}
+
+/*
+#modal-close-btn{
+    padding: 5px 10px;
+    background-color: #8f9091;
+    border: none;
+}
+#modal-close-btn:hover{
+    background-color: red;
+}
+
+
+#modal-next, #modal-prev{
+    border-radius: 10px;
+    background-color: #8f9091;
+    border: none;
+}
+#modal-next:active, #modal-prev:active{
+    background-color: #757677;
+}
+*/
+
+
+
+/*Pagination*/
+.pagination-container{
+    margin: auto;
+    width: 100%;
+    margin-top: 30px;
+    text-align: center;
+}
+
+.pagination-container ul li{
+    display: inline-block;
+}
+
+.pagination-container ul li a{
+    text-decoration: none;
+    color: gray; 
+    display: inline-block;
+    border: 1px solid gray;
+    padding: 8px 10px;
+    margin: 3px 6px;
+    border-radius: 4px;
+}
+
+.pagination-container ul li a:hover{
+    background-color: #107ac1;
+    color: white;
+}
+
+.pagination-container ul li .active{
+    background-color: #107ac1;
+    color:#fff;    
+}
+
 .error{
     font-size: 17px;
     color: red;

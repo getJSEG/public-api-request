@@ -4,9 +4,13 @@ window.onload = () => {
     const body = document.querySelector('body');
     const searchFieldContainer = document.querySelector('.search-container');
     const employeeData = [];
+    const itemPerPage = 6;
+    
     let displayedEmployees = [];
-    let userErros ='';
+    let searchedEmployees = [];
+    let userErros = '';
     let itemsFound;
+    let currentPage = 1;
     
     //getting the response from the url and parsing it to json
     const fetchData = url =>{
@@ -25,8 +29,7 @@ window.onload = () => {
           return  fetchData('https://randomuser.me/api/?results=12')
             .then(data => {
                    for(let info in data.results){
-                       displayEmplyeeData(data.results[info], info);
-                       setData(data.results[info]);
+                       employeeData.push(data.results[info]);
                        displayedEmployees.push(info);
                    }
             }).catch(error => {
@@ -34,10 +37,7 @@ window.onload = () => {
                     errorStatus = error;               
             });        
     }   
-    
-    //setting the data fromt fetch to the array
-    const setData = (data) => { employeeData.push(data); }
-    
+
     //displaying the employee data to the DOM
     const displayEmplyeeData = (data, index)=> {
         //creating a container element div with a attibute class name card
@@ -121,7 +121,7 @@ window.onload = () => {
                increment++
             }else if(displayedEmployees.indexOf(increment) === 0 && displayedEmployees.length !== 1){
                   increment = 0; 
-                increment++;
+                  increment++;
             }else{
                 increment = 0;
             }
@@ -129,12 +129,11 @@ window.onload = () => {
         }); 
     }
     //return the element modalWindow
-    const modalWindow = () => { return document.querySelector('.modal-container'); } 
+    const modalWindowElementContainer = () => { return document.querySelector('.modal-container'); } 
     //Hides The Modal Window
-    const hide = () => { modalWindow().style.display = 'none'; }    
+    const hide = () => { modalWindowElementContainer().style.display = 'none'; }    
     //Show The Modal Window
-    const show = () => { modalWindow().style.display = 'block'; }
-        
+    const show = () => { modalWindowElementContainer().style.display = 'block'; }  
     //creating an container for the modal window and adding its content with a template literal
     const createModalWindow = () => {
         const modal = document.createElement('div');
@@ -170,7 +169,7 @@ window.onload = () => {
         const searchFieldHTML = `
                     <form action="#" method="get">
                             <input type="search" id="search-input" class="search-input" placeholder="Search...">
-                            <input type="submit" value="&#x1F50D;" id="search-submit" class="search-submit">
+                            <input type="submit" value="&#128269;" id="search-submit" class="search-submit">
                         </form>`;        
         searchFieldContainer.innerHTML = searchFieldHTML;
     }
@@ -178,51 +177,125 @@ window.onload = () => {
     const searchField = () => {
         const inputField = document.querySelector('#search-input');
         const searchButton = document.querySelector('#search-submit');
-        const names = document.querySelectorAll('.card-name');
         let SearchValue;
         //when users types a character the it call the function to find one or more users in the array
         inputField.addEventListener('keyup',(event) => {
-            itemsFound = 0;
             SearchValue = event;
-            matchString(event);
+            searchResults(event);
         });
         //when the button is clicked then it calls the function to find the user typed in the serch field
         searchButton.addEventListener('click', (event) =>{
             event.preventDefault();
-            matchString(SearchValue);
+            searchResults(SearchValue);
         });
     }
     
-    const matchString = (event) =>{
-        displayedEmployees = [];
-        galleryContainer.innerHTML = '';
+    const searchResults = (event) =>{
         let filteredSearchValue = event.target.value.toLowerCase();
-        createModalWindow();
-        hide();
-        modalWindowButtons();
-        //Lopping the EmployeeData Array And trying to find the value from the searchfield        
+        displayedEmployees = [];
+        searchedEmployees =[];
+        itemsFound = 0;
+        galleryContainer.innerHTML = '';
+        modalWindow();
+        
+        //Lopping the EmployeeData Array And trying to find the value from the searchfield
         for(let i = 0 ; i < employeeData.length; i++){
             //chacks if the search value matches any of the names in the array
             //if it does the display it in the DOM
               if(!(employeeData[i].name.first.indexOf(filteredSearchValue))){
-                    displayEmplyeeData(employeeData[i], i);
+                    searchedEmployees.push(employeeData[i]);
                     displayedEmployees.push(i);
                     itemsFound++;
                 }
-        }  
-        //If there isnt any value that matched the search value then display the error
-        if(itemsFound === 0){
-            userErros = `<div class="error">"${event.target.value}" Name was Not Found </div>`
-            galleryContainer.innerHTML = userErros;      
+        }
+        //if items found is not 0 the display the employees else display and error
+        if(itemsFound !== 0){
+            pagination(itemPerPage, searchedEmployees.length, searchedEmployees);      
+        }else{
+            userErros = `<div class="error">"${event.target.value}" Was Not Found </div>`
+            galleryContainer.innerHTML = userErros;
         }
     }
- 
-    getEmployeeData().then(()=>{
+    //creating a single callback function to run createModalWindow, hide, modalWindowButtons
+    const modalWindow = () => {
         createModalWindow();
         hide();
         modalWindowButtons();
-        searchField();
-    });  
+    }     
+/************************************PAGINATION************************************/
+    const showItems = (itemPerPage, currentPage, totalItem, data) => {
+       //Display Employees
+       for(let i = (currentPage - 1) * itemPerPage; i < totalItem; i++){
+           if(i < (currentPage * itemPerPage)){
+                displayEmplyeeData(data[i], i); 
+           }
+       }       
+    }
+    //Creating and appeding a container for pagination links in the html body
+    const paginationLinkContainer = () => {
+        const linkContainer = document.createElement('div');
+        const unorderedList = `<ul class="pagination-ul"> </ul>`
+        linkContainer.setAttribute('class', 'pagination-container'); 
+        linkContainer.innerHTML = unorderedList;        
+        body.append(linkContainer);
+    }
+
+    const paginationLinks = (numberOfLinks) => {
+        //getting the container we just created from the paginationLinkContainer function
+        const ul = document.querySelector('.pagination-ul');    
+        ul.innerHTML = '';    
+        //creting a template literal for all pagination links
+        for(var i= 0; i < numberOfLinks; i++){
+           ul.innerHTML += `<li> <a href="#" class="paginationLink" id="${i}"> ${i+1} </a> </li>`; 
+        }
+    }
     
+    const activePage = (numberOfLinks, itemsPerPage, totalItems, employeesData) =>{
+        const activeLink = document.querySelectorAll('.paginationLink');
+        let previousPage = 1;
+        //current page when everithing loads
+        currentPage = 1;
+        //makingt he first page active in the pagination links
+        activeLink[0].classList.add('active');
+        //showing the first page of the pagination
+        showItems(itemsPerPage, currentPage, totalItems, employeesData);
+        
+        for(i =0; i < numberOfLinks; i++){
+            activeLink[i].addEventListener('click', (e) => {
+                e.preventDefault();
+                galleryContainer.innerHTML = '';
+                //creating a modal window every time we clear the gallery Container
+                modalWindow();
+                //getting the and parsing the textContent from the <li> to get the page number from the <li>
+                currentPage = parseInt(e.target.textContent);
+                //display the employee when the the pagination link is cliked
+                showItems(itemsPerPage, currentPage, totalItems, employeesData); 
+                //making the current page active and previous page unactive
+                for(var i = 0; i < numberOfLinks; i++){ 
+                    if(currentPage !== previousPage){
+                        activeLink[currentPage-1].classList.add('active');
+                        activeLink[previousPage-1].classList.remove('active');
+                        previousPage = currentPage;
+                    }
+                }
+            });
+        }       
+    }
+      
+    const pagination = (itemsPerPage, totalItems, employeesData) => {
+        //this does simple math to find how many links we need
+        const numberOfLinks = Math.ceil(displayedEmployees.length / itemPerPage);
+        //creating pagination links
+        paginationLinks(numberOfLinks);
+        //adding functionality to the pagination links
+        activePage(numberOfLinks, itemPerPage, totalItems, employeesData);
+    }
+ 
+    getEmployeeData().then(()=>{
+        modalWindow();
+        searchField();        
+        pagination(itemPerPage, employeeData.length, employeeData); 
+    });  
+    paginationLinkContainer();
     createSearchField();
 }
